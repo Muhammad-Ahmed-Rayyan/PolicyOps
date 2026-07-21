@@ -7,3 +7,9 @@ models/*.pkl
 data/raw/*.csv
 node_modules/
 .DS_Store
+
+mlflow.db
+classification_report_*.txt
+confusion_matrix_*.png
+roc_curve_*.png
+models/
