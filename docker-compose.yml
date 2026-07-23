@@ -1,0 +1,9 @@
+services:
+  policyops-api:
+    build: .
+    container_name: policyops-api
+    ports:
+      - "8000:8000"
+    environment:
+      - MLFLOW_TRACKING_URI=sqlite:///mlflow.db
+    restart: unless-stopped
