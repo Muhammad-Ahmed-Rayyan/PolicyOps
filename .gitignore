@@ -1,3 +1,4 @@
+# Python
 venv/
 __pycache__/
 *.pyc
@@ -13,3 +14,26 @@ classification_report_*.txt
 confusion_matrix_*.png
 roc_curve_*.png
 models/
+
+# Node / Frontend
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+dist
+dist-ssr
+*.local
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
