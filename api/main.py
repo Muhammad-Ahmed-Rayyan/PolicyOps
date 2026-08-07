@@ -1,3 +1,4 @@
+import json
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from mlflow.tracking import MlflowClient
@@ -20,6 +21,13 @@ app.add_middleware(
 
 predictor: FraudPredictor | None = None
 
+@app.get("/experiments/roc-curves")
+def roc_curves():
+    try:
+        with open("models/roc_curves.json", "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="ROC curve data not generated yet. Run src/generate_roc_data.py")
 
 @app.on_event("startup")
 def load_model():
