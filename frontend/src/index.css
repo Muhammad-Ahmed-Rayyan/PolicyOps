@@ -1,8 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --color-ink: #10192E;
+  --color-paper: #F6F5F1;
+  --color-brass: #A9762F;
+  --color-stamp-red: #B3261E;
+  --color-ledger-green: #2F6F4E;
+  --font-display: "Fraunces", serif;
+  --font-body: "IBM Plex Sans", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
 
 html, body, #root {
   width: 100%;
   min-height: 100vh;
   margin: 0;
   padding: 0;
+  background: var(--color-paper);
+  font-family: var(--font-body);
+  color: var(--color-ink);
+}
+
+label {
+  color: var(--color-ink);
 }

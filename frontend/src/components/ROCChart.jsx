@@ -62,7 +62,6 @@ export default function ROCChart() {
             tick={{ fontSize: 11 }}
           />
           <Tooltip formatter={(val) => val?.toFixed(3)} />
-          <Legend wrapperStyle={{ fontSize: 12 }} />
           {Object.keys(curves).map((model) => (
             <Line
               key={model}
@@ -71,11 +70,19 @@ export default function ROCChart() {
               stroke={COLORS[model] || "#666"}
               dot={false}
               strokeWidth={2}
-              name={`${model} (AUC ${curves[model].roc_auc.toFixed(3)})`}
             />
           ))}
         </LineChart>
       </ResponsiveContainer>
+      <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4 text-xs">
+      {Object.entries(curves).map(([model, data]) => (
+        <div key={model} className="flex items-center gap-1.5">
+          <span className="w-3 h-0.5 inline-block" style={{ backgroundColor: COLORS[model] || "#666" }} />
+          <span className="text-[var(--color-ink)]">{model}</span>
+          <span className="font-[var(--font-mono)] text-gray-500">({data.roc_auc.toFixed(3)})</span>
+        </div>
+      ))}
+      </div>
     </div>
   );
 }

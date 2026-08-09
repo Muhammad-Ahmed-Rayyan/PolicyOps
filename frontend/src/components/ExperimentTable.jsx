@@ -16,7 +16,7 @@ function dedupeBestPerModel(runs) {
 
 function MetricCell({ value, isBest }) {
   return (
-    <td className={`px-4 py-3 text-sm text-center ${isBest ? "font-bold text-indigo-600" : "text-gray-700"}`}>
+    <td className={`px-4 py-3 text-sm text-center font-[var(--font-mono)] ${isBest ? "font-bold text-[var(--color-brass)]" : "text-gray-700"}`}>
       {value?.toFixed(4)}
     </td>
   );
@@ -62,7 +62,7 @@ export default function ExperimentTable() {
                 <td className="px-4 py-3 text-sm font-medium text-gray-900">
                   {run.model_type}
                   {run.f1_macro === bestF1 && (
-                    <span className="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
+                    <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide bg-[var(--color-brass)]/15 text-[var(--color-brass)] px-2 py-0.5 rounded-full border border-[var(--color-brass)]/30">
                       Champion
                     </span>
                   )}

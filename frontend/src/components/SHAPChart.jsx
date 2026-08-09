@@ -12,11 +12,11 @@ export default function SHAPChart({ result }) {
     .map(([key, value]) => ({ name: cleanLabel(key), value }))
     .sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
 
-  const riskColor = {
-    Low: "text-green-600 bg-green-50 border-green-200",
-    Medium: "text-yellow-600 bg-yellow-50 border-yellow-200",
-    High: "text-red-600 bg-red-50 border-red-200",
-  }[result.risk_level] || "text-gray-600 bg-gray-50 border-gray-200";
+  const stampColor = {
+    Low: "text-[var(--color-ledger-green)] border-[var(--color-ledger-green)]",
+    Medium: "text-[var(--color-brass)] border-[var(--color-brass)]",
+    High: "text-[var(--color-stamp-red)] border-[var(--color-stamp-red)]",
+  }[result.risk_level] || "text-gray-500 border-gray-400";
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-5 flex flex-col gap-5">
@@ -24,7 +24,10 @@ export default function SHAPChart({ result }) {
         <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
           Prediction Result
         </h3>
-        <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${riskColor}`}>
+        <span
+          className={`font-[var(--font-display)] text-sm font-bold px-4 py-1.5 border-4 ${stampColor} -rotate-3 uppercase tracking-wider select-none`}
+          style={{ borderStyle: "double" }}
+        >
           {result.risk_level} Risk
         </span>
       </div>
@@ -32,15 +35,15 @@ export default function SHAPChart({ result }) {
       <div className="grid grid-cols-3 gap-3 text-center">
         <div className="bg-gray-50 rounded-md py-3">
           <div className="text-xs text-gray-500">Probability</div>
-          <div className="text-lg font-bold text-gray-900">{(result.probability * 100).toFixed(1)}%</div>
+          <div className="text-lg font-bold text-gray-900 font-[var(--font-mono)]">{(result.probability * 100).toFixed(1)}%</div>
         </div>
         <div className="bg-gray-50 rounded-md py-3">
           <div className="text-xs text-gray-500">Baseline Risk</div>
-          <div className="text-lg font-bold text-gray-900">{(result.baseline_risk * 100).toFixed(1)}%</div>
+          <div className="text-lg font-bold text-gray-900 font-[var(--font-mono)]">{(result.baseline_risk * 100).toFixed(1)}%</div>
         </div>
         <div className="bg-gray-50 rounded-md py-3">
           <div className="text-xs text-gray-500">Model Version</div>
-          <div className="text-lg font-bold text-gray-900">v{result.model_version}</div>
+          <div className="text-lg font-bold text-gray-900 font-[var(--font-mono)]">v{result.model_version}</div>
         </div>
       </div>
 

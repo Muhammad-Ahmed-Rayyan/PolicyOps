@@ -3,7 +3,7 @@ import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const initialState = {
+const placeholders = {
   months_as_customer: 328,
   age: 48,
   policy_state: "OH",
@@ -39,6 +39,7 @@ const initialState = {
   days_policy_to_incident: 5432,
 };
 
+const emptyState = Object.fromEntries(Object.keys(placeholders).map((k) => [k, ""]));
 const SELECT_OPTIONS = {
   policy_csl: ["100/300", "250/500", "500/1000"],
   insured_sex: ["MALE", "FEMALE"],
@@ -59,20 +60,23 @@ const NUMERIC_FIELDS = new Set([
   "injury_claim", "property_claim", "vehicle_claim", "auto_year", "days_policy_to_incident",
 ]);
 
-function Field({ label, name, value, onChange }) {
+function Field({ label, name, value, placeholder, onChange }) {
   const isSelect = name in SELECT_OPTIONS;
   const isNumeric = NUMERIC_FIELDS.has(name);
 
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-gray-700">{label}</label>
+    <div className="flex flex-col gap-1.5">
+      <label className="text-xs font-semibold text-[var(--color-ink)]/70 uppercase tracking-wide">
+        {label}
+      </label>
       {isSelect ? (
         <select
           name={name}
           value={value}
           onChange={onChange}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brass)] focus:border-[var(--color-brass)] transition"
         >
+          <option value="" disabled>Select...</option>
           {SELECT_OPTIONS[name].map((opt) => (
             <option key={opt} value={opt}>{opt}</option>
           ))}
@@ -83,8 +87,9 @@ function Field({ label, name, value, onChange }) {
           step={isNumeric ? "any" : undefined}
           name={name}
           value={value}
+          placeholder={String(placeholder)}
           onChange={onChange}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className={`border border-gray-300 rounded-md px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-brass)] focus:border-[var(--color-brass)] transition ${isNumeric ? "font-[var(--font-mono)]" : ""}`}
         />
       )}
     </div>
@@ -93,9 +98,14 @@ function Field({ label, name, value, onChange }) {
 
 function Section({ title, children }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-5">
-      <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">{title}</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="flex items-center gap-3 mb-5">
+        <h3 className="font-[var(--font-display)] text-base font-bold text-[var(--color-ink)]">
+          {title}
+        </h3>
+        <div className="flex-1 h-px bg-[var(--color-brass)]/30" />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {children}
       </div>
     </div>
@@ -103,14 +113,14 @@ function Section({ title, children }) {
 }
 
 export default function PredictionForm({ onResult }) {
-  const [form, setForm] = useState(initialState);
+  const [form, setForm] = useState(emptyState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     const isNumeric = NUMERIC_FIELDS.has(name);
-    setForm((prev) => ({ ...prev, [name]: isNumeric ? Number(value) : value }));
+    setForm((prev) => ({ ...prev, [name]: isNumeric && value !== "" ? Number(value) : value }));
   };
 
   const handleSubmit = async (e) => {
@@ -118,10 +128,15 @@ export default function PredictionForm({ onResult }) {
     setLoading(true);
     setError(null);
 
+    // Fall back to placeholder sample values for any field left empty
+    const filled = Object.fromEntries(
+      Object.keys(placeholders).map((k) => [k, form[k] === "" ? placeholders[k] : form[k]])
+    );
+
     const payload = {
-      ...form,
-      "capital-gains": form.capital_gains,
-      "capital-loss": form.capital_loss,
+      ...filled,
+      "capital-gains": filled.capital_gains,
+      "capital-loss": filled.capital_loss,
     };
     delete payload.capital_gains;
     delete payload.capital_loss;
@@ -137,7 +152,7 @@ export default function PredictionForm({ onResult }) {
   };
 
   const field = (label, name) => (
-    <Field key={name} label={label} name={name} value={form[name]} onChange={handleChange} />
+    <Field key={name} label={label} name={name} value={form[name]} placeholder={placeholders[name]} onChange={handleChange} />
   );
 
   return (
@@ -199,7 +214,7 @@ export default function PredictionForm({ onResult }) {
       <button
         type="submit"
         disabled={loading}
-        className="self-start bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium px-6 py-2.5 rounded-md transition"
+        className="self-start bg-[var(--color-ink)] hover:bg-[var(--color-ink)]/90 disabled:opacity-50 text-white font-medium px-6 py-2.5 rounded-md transition shadow-sm"
       >
         {loading ? "Predicting..." : "Predict Fraud Risk"}
       </button>

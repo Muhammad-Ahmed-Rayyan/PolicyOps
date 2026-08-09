@@ -3,25 +3,45 @@ import PredictionForm from "./components/PredictionForm";
 import SHAPChart from "./components/SHAPChart";
 import ROCChart from "./components/ROCChart";
 import ExperimentTable from "./components/ExperimentTable";
+import Logo from "./components/Logo";
 
 function App() {
   const [result, setResult] = useState(null);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <h1 className="text-3xl font-bold text-gray-900">PolicyOps</h1>
-      <p className="text-gray-600 mb-8">Insurance Claim Fraud Risk Dashboard</p>
+    <div className="min-h-screen bg-[var(--color-paper)]">
+      <header className="bg-[var(--color-ink)] text-white px-8 py-5">
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
+          <Logo className="w-8 h-8" />
+          <h1 className="font-[var(--font-display)] text-2xl font-bold tracking-tight">
+            PolicyOps
+          </h1>
+          <span className="text-xs uppercase tracking-widest text-white/50">
+            Claim Fraud Risk Ledger
+          </span>
+        </div>
+      </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        <PredictionForm onResult={setResult} />
-        <SHAPChart result={result} />
-      </div>
-      <div className="mt-8">
-        <ROCChart />
-      </div>
-      <div className="mt-8">
-        <ExperimentTable />
-      </div>
+      <main className="max-w-7xl mx-auto px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          <PredictionForm onResult={setResult} />
+          <div className="lg:sticky lg:top-6">
+            <SHAPChart result={result} />
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <ROCChart />
+        </div>
+
+        <div className="mt-8">
+          <ExperimentTable />
+        </div>
+      </main>
+
+      <footer className="max-w-7xl mx-auto px-8 py-6 text-xs text-gray-400">
+        PolicyOps — MLOps fraud detection pipeline. XGBoost champion model, SHAP explainability.
+      </footer>
     </div>
   );
 }
