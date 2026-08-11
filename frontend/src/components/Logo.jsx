@@ -1,9 +1,18 @@
 export default function Logo({ className = "w-8 h-8" }) {
   return (
     <svg viewBox="0 0 48 48" fill="none" className={className}>
-      <path d="M24 4L42 11V22C42 33 34.5 41.5 24 44C13.5 41.5 6 33 6 22V11L24 4Z" fill="#10192E" />
-      <path d="M24 4L42 11V22C42 33 34.5 41.5 24 44C13.5 41.5 6 33 6 22V11L24 4Z" stroke="#A9762F" strokeWidth="1.5" />
-      <path d="M16 24L21 29L32 18" stroke="#A9762F" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="24" cy="24" r="20" fill="#10192E" />
+      <circle cx="24" cy="24" r="20" stroke="#A9762F" strokeWidth="1.5" strokeDasharray="3 2.5" />
+      <circle cx="24" cy="24" r="15" stroke="#A9762F" strokeWidth="1" opacity="0.5" />
+      <path
+        d="M18 15H27L30 18V33H18V15Z"
+        fill="none"
+        stroke="#F6F5F1"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path d="M27 15V18H30" stroke="#F6F5F1" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M21 22H27M21 26H27M21 30H24" stroke="#A9762F" strokeWidth="1.4" strokeLinecap="round" />
     </svg>
   );
 }

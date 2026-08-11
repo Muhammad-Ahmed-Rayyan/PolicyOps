@@ -60,6 +60,25 @@ const NUMERIC_FIELDS = new Set([
   "injury_claim", "property_claim", "vehicle_claim", "auto_year", "days_policy_to_incident",
 ]);
 
+const NUMERIC_BOUNDS = {
+  age: { min: 16, max: 100 },
+  months_as_customer: { min: 0 },
+  policy_deductable: { min: 0 },
+  policy_annual_premium: { min: 0 },
+  total_claim_amount: { min: 0, max: 500000 },
+  injury_claim: { min: 0 },
+  property_claim: { min: 0 },
+  vehicle_claim: { min: 0 },
+  incident_hour_of_the_day: { min: 0, max: 23 },
+  auto_year: { min: 1980, max: 2026 },
+  witnesses: { min: 0 },
+  bodily_injuries: { min: 0 },
+  number_of_vehicles_involved: { min: 1, max: 10 },
+};
+
+const TEXT_FIELDS = ["policy_state", "insured_occupation", "insured_hobbies", "incident_state", "incident_city", "auto_make"];
+const TEXT_PATTERN = /^[A-Za-z\s'-]+$/;
+
 function Field({ label, name, value, placeholder, onChange }) {
   const isSelect = name in SELECT_OPTIONS;
   const isNumeric = NUMERIC_FIELDS.has(name);
@@ -85,6 +104,8 @@ function Field({ label, name, value, placeholder, onChange }) {
         <input
           type={isNumeric ? "number" : "text"}
           step={isNumeric ? "any" : undefined}
+          min={NUMERIC_BOUNDS[name]?.min}
+          max={NUMERIC_BOUNDS[name]?.max}
           name={name}
           value={value}
           placeholder={String(placeholder)}
@@ -123,20 +144,59 @@ export default function PredictionForm({ onResult }) {
     setForm((prev) => ({ ...prev, [name]: isNumeric && value !== "" ? Number(value) : value }));
   };
 
+  const validate = (data) => {
+  const errors = [];
+
+  for (const key of Object.keys(placeholders)) {
+    if (data[key] === "" || data[key] === null || data[key] === undefined) {
+      errors.push(`${key.replace(/_/g, " ")} is required`);
+    }
+  }
+
+  if (errors.length > 0) return errors; // don't run further checks on incomplete data
+
+  if (data.age < 16 || data.age > 100) errors.push("Age must be between 16 and 100");
+  if (data.months_as_customer < 0) errors.push("Months as customer cannot be negative");
+  if (data.policy_deductable < 0) errors.push("Policy deductible cannot be negative");
+  if (data.policy_annual_premium <= 0) errors.push("Annual premium must be positive");
+  if (data.total_claim_amount < 0 || data.total_claim_amount > 500000)
+    errors.push("Total claim amount must be between 0 and 500,000");
+  if (data.injury_claim < 0 || data.property_claim < 0 || data.vehicle_claim < 0)
+    errors.push("Claim sub-amounts cannot be negative");
+  if (data.incident_hour_of_the_day < 0 || data.incident_hour_of_the_day > 23)
+    errors.push("Incident hour must be between 0 and 23");
+  if (data.auto_year < 1980 || data.auto_year > 2026)
+    errors.push("Auto year must be between 1980 and 2026");
+  if (data.witnesses < 0) errors.push("Witnesses cannot be negative");
+  if (data.bodily_injuries < 0) errors.push("Bodily injuries cannot be negative");
+  if (data.number_of_vehicles_involved < 1 || data.number_of_vehicles_involved > 10)
+    errors.push("Vehicles involved must be between 1 and 10");
+
+  for (const field of TEXT_FIELDS) {
+    if (!TEXT_PATTERN.test(data[field])) {
+      errors.push(`${field.replace(/_/g, " ")} contains invalid characters`);
+    }
+  }
+
+  return errors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
-    // Fall back to placeholder sample values for any field left empty
-    const filled = Object.fromEntries(
-      Object.keys(placeholders).map((k) => [k, form[k] === "" ? placeholders[k] : form[k]])
-    );
+    const validationErrors = validate(form);
+    if (validationErrors.length > 0) {
+      setError(validationErrors.join("\n"));
+      return;
+    }
+
+    setLoading(true);
 
     const payload = {
-      ...filled,
-      "capital-gains": filled.capital_gains,
-      "capital-loss": filled.capital_loss,
+      ...form,
+      "capital-gains": form.capital_gains,
+      "capital-loss": form.capital_loss,
     };
     delete payload.capital_gains;
     delete payload.capital_loss;
@@ -206,7 +266,7 @@ export default function PredictionForm({ onResult }) {
       </Section>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-md px-4 py-3">
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-md px-4 py-3 whitespace-pre-line">
           {error}
         </div>
       )}
