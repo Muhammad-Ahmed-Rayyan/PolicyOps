@@ -1,23 +1,24 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from "../config";
 
 function dedupeBestPerModel(runs) {
+  if (!Array.isArray(runs)) return [];
   const best = {};
   for (const run of runs) {
+    if (!run || typeof run !== "object" || !run.model_type) continue;
     const existing = best[run.model_type];
-    if (!existing || run.f1_macro > existing.f1_macro) {
+    if (!existing || (run.f1_macro ?? 0) > (existing.f1_macro ?? 0)) {
       best[run.model_type] = run;
     }
   }
-  return Object.values(best).sort((a, b) => b.f1_macro - a.f1_macro);
+  return Object.values(best).sort((a, b) => (b.f1_macro ?? 0) - (a.f1_macro ?? 0));
 }
 
 function MetricCell({ value, isBest }) {
   return (
     <td className={`px-4 py-3 text-sm text-center font-[var(--font-mono)] ${isBest ? "font-bold text-[var(--color-brass)]" : "text-gray-700"}`}>
-      {value?.toFixed(4)}
+      {typeof value === "number" ? value.toFixed(4) : "—"}
     </td>
   );
 }
@@ -28,17 +29,53 @@ export default function ExperimentTable() {
 
   useEffect(() => {
     axios.get(`${API_URL}/experiments`)
-      .then((res) => setRuns(dedupeBestPerModel(res.data)))
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setRuns(dedupeBestPerModel(res.data));
+        } else {
+          setError("Invalid experiment data format.");
+        }
+      })
       .catch(() => setError("Could not load experiment data."));
   }, []);
 
-  if (error) return <div className="text-sm text-gray-500 italic">{error}</div>;
-  if (!runs) return <div className="text-sm text-gray-500">Loading experiments...</div>;
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-5">
+        <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
+          Model Comparison
+        </h3>
+        <div className="text-sm text-gray-500 italic">{error}</div>
+      </div>
+    );
+  }
 
-  const bestF1 = Math.max(...runs.map((r) => r.f1_macro));
-  const bestAuc = Math.max(...runs.map((r) => r.roc_auc));
-  const bestAcc = Math.max(...runs.map((r) => r.accuracy));
-  const fastest = Math.min(...runs.map((r) => r.training_time_sec));
+  if (!runs) {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-5">
+        <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
+          Model Comparison
+        </h3>
+        <div className="text-sm text-gray-500">Loading experiments...</div>
+      </div>
+    );
+  }
+
+  if (runs.length === 0) {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-5">
+        <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
+          Model Comparison
+        </h3>
+        <div className="text-sm text-gray-500 italic">No experiment data recorded yet.</div>
+      </div>
+    );
+  }
+
+  const bestF1 = Math.max(...runs.map((r) => r.f1_macro ?? 0));
+  const bestAuc = Math.max(...runs.map((r) => r.roc_auc ?? 0));
+  const bestAcc = Math.max(...runs.map((r) => r.accuracy ?? 0));
+  const fastest = Math.min(...runs.map((r) => r.training_time_sec ?? Infinity));
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-5">
@@ -58,7 +95,7 @@ export default function ExperimentTable() {
           </thead>
           <tbody>
             {runs.map((run) => (
-              <tr key={run.run_id} className="border-b border-gray-100 hover:bg-gray-50">
+              <tr key={run.run_id || run.model_type} className="border-b border-gray-100 hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm font-medium text-gray-900">
                   {run.model_type}
                   {run.f1_macro === bestF1 && (

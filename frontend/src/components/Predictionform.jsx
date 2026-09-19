@@ -1,7 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from "../config";
 
 const placeholders = {
   months_as_customer: 328,
@@ -145,40 +144,40 @@ export default function PredictionForm({ onResult }) {
   };
 
   const validate = (data) => {
-  const errors = [];
+    const errors = [];
 
-  for (const key of Object.keys(placeholders)) {
-    if (data[key] === "" || data[key] === null || data[key] === undefined) {
-      errors.push(`${key.replace(/_/g, " ")} is required`);
+    for (const key of Object.keys(placeholders)) {
+      if (data[key] === "" || data[key] === null || data[key] === undefined) {
+        errors.push(`${key.replace(/_/g, " ")} is required`);
+      }
     }
-  }
 
-  if (errors.length > 0) return errors; // don't run further checks on incomplete data
+    if (errors.length > 0) return errors; // don't run further checks on incomplete data
 
-  if (data.age < 16 || data.age > 100) errors.push("Age must be between 16 and 100");
-  if (data.months_as_customer < 0) errors.push("Months as customer cannot be negative");
-  if (data.policy_deductable < 0) errors.push("Policy deductible cannot be negative");
-  if (data.policy_annual_premium <= 0) errors.push("Annual premium must be positive");
-  if (data.total_claim_amount < 0 || data.total_claim_amount > 500000)
-    errors.push("Total claim amount must be between 0 and 500,000");
-  if (data.injury_claim < 0 || data.property_claim < 0 || data.vehicle_claim < 0)
-    errors.push("Claim sub-amounts cannot be negative");
-  if (data.incident_hour_of_the_day < 0 || data.incident_hour_of_the_day > 23)
-    errors.push("Incident hour must be between 0 and 23");
-  if (data.auto_year < 1980 || data.auto_year > 2026)
-    errors.push("Auto year must be between 1980 and 2026");
-  if (data.witnesses < 0) errors.push("Witnesses cannot be negative");
-  if (data.bodily_injuries < 0) errors.push("Bodily injuries cannot be negative");
-  if (data.number_of_vehicles_involved < 1 || data.number_of_vehicles_involved > 10)
-    errors.push("Vehicles involved must be between 1 and 10");
+    if (data.age < 16 || data.age > 100) errors.push("Age must be between 16 and 100");
+    if (data.months_as_customer < 0) errors.push("Months as customer cannot be negative");
+    if (data.policy_deductable < 0) errors.push("Policy deductible cannot be negative");
+    if (data.policy_annual_premium <= 0) errors.push("Annual premium must be positive");
+    if (data.total_claim_amount < 0 || data.total_claim_amount > 500000)
+      errors.push("Total claim amount must be between 0 and 500,000");
+    if (data.injury_claim < 0 || data.property_claim < 0 || data.vehicle_claim < 0)
+      errors.push("Claim sub-amounts cannot be negative");
+    if (data.incident_hour_of_the_day < 0 || data.incident_hour_of_the_day > 23)
+      errors.push("Incident hour must be between 0 and 23");
+    if (data.auto_year < 1980 || data.auto_year > 2026)
+      errors.push("Auto year must be between 1980 and 2026");
+    if (data.witnesses < 0) errors.push("Witnesses cannot be negative");
+    if (data.bodily_injuries < 0) errors.push("Bodily injuries cannot be negative");
+    if (data.number_of_vehicles_involved < 1 || data.number_of_vehicles_involved > 10)
+      errors.push("Vehicles involved must be between 1 and 10");
 
-  for (const field of TEXT_FIELDS) {
-    if (!TEXT_PATTERN.test(data[field])) {
-      errors.push(`${field.replace(/_/g, " ")} contains invalid characters`);
+    for (const field of TEXT_FIELDS) {
+      if (!TEXT_PATTERN.test(data[field])) {
+        errors.push(`${field.replace(/_/g, " ")} contains invalid characters`);
+      }
     }
-  }
 
-  return errors;
+    return errors;
   };
 
   const handleSubmit = async (e) => {

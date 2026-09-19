@@ -4,6 +4,7 @@ import SHAPChart from "./components/SHAPChart";
 import ROCChart from "./components/ROCChart";
 import ExperimentTable from "./components/ExperimentTable";
 import Logo from "./components/Logo";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
   const [result, setResult] = useState(null);
@@ -24,18 +25,26 @@ function App() {
 
       <main className="max-w-7xl mx-auto px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          <PredictionForm onResult={setResult} />
+          <ErrorBoundary>
+            <PredictionForm onResult={setResult} />
+          </ErrorBoundary>
           <div className="lg:sticky lg:top-6">
-            <SHAPChart result={result} />
+            <ErrorBoundary>
+              <SHAPChart result={result} />
+            </ErrorBoundary>
           </div>
         </div>
 
         <div className="mt-8">
-          <ROCChart />
+          <ErrorBoundary>
+            <ROCChart />
+          </ErrorBoundary>
         </div>
 
         <div className="mt-8">
-          <ExperimentTable />
+          <ErrorBoundary>
+            <ExperimentTable />
+          </ErrorBoundary>
         </div>
       </main>
 

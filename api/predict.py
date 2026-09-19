@@ -1,14 +1,23 @@
+import os
+from pathlib import Path
+import json
 import pandas as pd
 import joblib
 import mlflow
 from mlflow.tracking import MlflowClient
-import json
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+if "MLFLOW_TRACKING_URI" not in os.environ:
+    db_file = BASE_DIR / "mlflow.db"
+    if db_file.exists():
+        os.environ["MLFLOW_TRACKING_URI"] = f"sqlite:///{db_file.resolve().as_posix()}"
 
 REGISTERED_MODEL_NAME = "policyops-fraud-model"
 MODEL_ALIAS = "champion"
-PREPROCESSOR_PATH = "models/preprocessor.pkl"
-EXPLAINER_PATH = "models/shap_explainer.pkl"
-BASELINE_PATH = "models/shap_baseline.json"
+PREPROCESSOR_PATH = BASE_DIR / "models" / "preprocessor.pkl"
+EXPLAINER_PATH = BASE_DIR / "models" / "shap_explainer.pkl"
+BASELINE_PATH = BASE_DIR / "models" / "shap_baseline.json"
 
 
 class FraudPredictor:

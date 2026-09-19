@@ -2,14 +2,15 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 function cleanLabel(key) {
   // strips the "num__" / "cat__" prefix added by the sklearn ColumnTransformer
-  return key.replace(/^(num__|cat__)/, "").replace(/_/g, " ");
+  return String(key).replace(/^(num__|cat__)/, "").replace(/_/g, " ");
 }
 
 export default function SHAPChart({ result }) {
   if (!result) return null;
 
-  const data = Object.entries(result.shap_values)
-    .map(([key, value]) => ({ name: cleanLabel(key), value }))
+  const shapValues = result.shap_values && typeof result.shap_values === "object" ? result.shap_values : {};
+  const data = Object.entries(shapValues)
+    .map(([key, value]) => ({ name: cleanLabel(key), value: typeof value === "number" ? value : 0 }))
     .sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
 
   const stampColor = {
@@ -28,22 +29,28 @@ export default function SHAPChart({ result }) {
           className={`font-[var(--font-display)] text-sm font-bold px-4 py-1.5 border-4 ${stampColor} -rotate-3 uppercase tracking-wider select-none`}
           style={{ borderStyle: "double" }}
         >
-          {result.risk_level} Risk
+          {result.risk_level || "Unknown"} Risk
         </span>
       </div>
 
       <div className="grid grid-cols-3 gap-3 text-center">
         <div className="bg-gray-50 rounded-md py-3">
           <div className="text-xs text-gray-500">Probability</div>
-          <div className="text-lg font-bold text-gray-900 font-[var(--font-mono)]">{(result.probability * 100).toFixed(1)}%</div>
+          <div className="text-lg font-bold text-gray-900 font-[var(--font-mono)]">
+            {typeof result.probability === "number" ? `${(result.probability * 100).toFixed(1)}%` : "N/A"}
+          </div>
         </div>
         <div className="bg-gray-50 rounded-md py-3">
           <div className="text-xs text-gray-500">Baseline Risk</div>
-          <div className="text-lg font-bold text-gray-900 font-[var(--font-mono)]">{(result.baseline_risk * 100).toFixed(1)}%</div>
+          <div className="text-lg font-bold text-gray-900 font-[var(--font-mono)]">
+            {typeof result.baseline_risk === "number" ? `${(result.baseline_risk * 100).toFixed(1)}%` : "N/A"}
+          </div>
         </div>
         <div className="bg-gray-50 rounded-md py-3">
           <div className="text-xs text-gray-500">Model Version</div>
-          <div className="text-lg font-bold text-gray-900 font-[var(--font-mono)]">v{result.model_version}</div>
+          <div className="text-lg font-bold text-gray-900 font-[var(--font-mono)]">
+            v{result.model_version || "1"}
+          </div>
         </div>
       </div>
 
@@ -51,19 +58,23 @@ export default function SHAPChart({ result }) {
         <div className="text-xs text-gray-500 mb-2">
           Top factors driving this prediction (SHAP values)
         </div>
-        <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={data} layout="vertical" margin={{ left: 20, right: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-            <XAxis type="number" tick={{ fontSize: 11 }} />
-            <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 11 }} />
-            <Tooltip formatter={(val) => val.toFixed(4)} />
-            <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-              {data.map((entry, index) => (
-                <Cell key={index} fill={entry.value > 0 ? "#dc2626" : "#16a34a"} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        {data.length > 0 ? (
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={data} layout="vertical" margin={{ left: 20, right: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+              <XAxis type="number" tick={{ fontSize: 11 }} />
+              <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 11 }} />
+              <Tooltip formatter={(val) => (typeof val === "number" ? val.toFixed(4) : val)} />
+              <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                {data.map((entry, index) => (
+                  <Cell key={index} fill={entry.value > 0 ? "#dc2626" : "#16a34a"} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="text-xs text-gray-400 py-6 text-center">No SHAP factors available.</div>
+        )}
         <div className="flex items-center gap-4 text-xs text-gray-500 mt-2">
           <span className="flex items-center gap-1">
             <span className="w-3 h-3 bg-red-600 rounded-sm inline-block" /> Increases risk

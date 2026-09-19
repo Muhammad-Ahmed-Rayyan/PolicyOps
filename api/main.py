@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 import json
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -5,6 +7,15 @@ from mlflow.tracking import MlflowClient
 
 from api.schemas import ClaimInput, PredictionResponse, ModelInfo, HealthResponse
 from api.predict import FraudPredictor, REGISTERED_MODEL_NAME, MODEL_ALIAS
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+if "MLFLOW_TRACKING_URI" not in os.environ:
+    db_file = BASE_DIR / "mlflow.db"
+    if db_file.exists():
+        os.environ["MLFLOW_TRACKING_URI"] = f"sqlite:///{db_file.resolve().as_posix()}"
+
+ROC_PATH = BASE_DIR / "models" / "roc_curves.json"
 
 app = FastAPI(
     title="PolicyOps API",
@@ -24,7 +35,7 @@ predictor: FraudPredictor | None = None
 @app.get("/experiments/roc-curves")
 def roc_curves():
     try:
-        with open("models/roc_curves.json", "r") as f:
+        with open(ROC_PATH, "r") as f:
             return json.load(f)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="ROC curve data not generated yet. Run src/generate_roc_data.py")
